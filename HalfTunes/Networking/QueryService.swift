@@ -37,12 +37,12 @@ class QueryService {
   //
   // MARK: - Constants
   //
-  // TODO 1
+  let defaultSession = URLSession(configuration: .default)
   
   //
   // MARK: - Variables And Properties
   //
-  // TODO 2
+  var dataTask: URLSessionDataTask?
   var errorMessage = ""
   var tracks: [Track] = []
   
@@ -56,7 +56,41 @@ class QueryService {
   // MARK: - Internal Methods
   //
   func getSearchResults(searchTerm: String, completion: @escaping QueryResult) {
-    // TODO 3
+    // 1
+    dataTask?.cancel()
+    
+    // 2
+    if var urlComponents = URLComponents(string: "https://itunes.apple.com/search") {
+      urlComponents.query = "media=music&entity=song&term=\(searchTerm)"
+      // 3
+      guard let url = urlComponents.url else {
+        return
+      }
+      // 4
+      dataTask =
+        defaultSession.dataTask(with: url) { [weak self] data, response, error in
+          defer {
+            self?.dataTask = nil
+          }
+          // 5
+          if let error = error {
+            self?.errorMessage += "DataTask error: " +
+              error.localizedDescription + "\n"
+          } else if
+            let data = data,
+            let response = response as? HTTPURLResponse,
+            response.statusCode == 200 {
+            self?.updateSearchResults(data)
+            // 6
+            DispatchQueue.main.async {
+              completion(self?.tracks, self?.errorMessage ?? "")
+            }
+          }
+      }
+      // 7
+      dataTask?.resume()
+    }
+
     DispatchQueue.main.async {
       completion(self.tracks, self.errorMessage)
     }

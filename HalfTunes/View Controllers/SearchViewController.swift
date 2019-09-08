@@ -53,7 +53,13 @@ class SearchViewController: UIViewController {
   //
   // MARK: - Variables And Properties
   //
-  // TODO 6
+  lazy var downloadsSession: URLSession = {
+    let configuration = URLSessionConfiguration.default
+    
+    return URLSession(configuration: configuration,
+                      delegate: self,
+                      delegateQueue: nil)
+  }()
   
   var searchResults: [Track] = []
   
@@ -222,4 +228,9 @@ extension SearchViewController: TrackCellDelegate {
 
 // TODO 19
 
-// TODO 5
+extension SearchViewController: URLSessionDownloadDelegate {
+  func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask,
+                  didFinishDownloadingTo location: URL) {
+    print("Finished downloading to \(location).")
+  }
+}
